@@ -8,6 +8,8 @@ import {
 import axios from "axios";
 
 const API_URL = "";   // Use Next.js proxy routes (same-origin)
+// PDF goes directly to Render to bypass Vercel 10s serverless timeout
+const DIRECT_BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<"ingest" | "bookings">("ingest");
@@ -85,7 +87,7 @@ function IngestSection({ onStatus }: { onStatus: (s: string) => void }) {
     const form = new FormData();
     form.append("file", file);
     try {
-      const res = await axios.post(`${API_URL}/api/ingest/pdf`, form);
+      const res = await axios.post(`${DIRECT_BACKEND}/api/ingest/pdf`, form, { timeout: 60000 });
       onStatus(`✅ PDF indexed: ${res.data.chunks_created} chunks created.`);
     } catch { onStatus("❌ PDF ingestion failed."); }
     finally  { setLoading(""); if (fileRef.current) fileRef.current.value = ""; }

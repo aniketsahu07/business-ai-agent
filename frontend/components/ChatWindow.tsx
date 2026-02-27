@@ -9,6 +9,10 @@ import TypingIndicator from "./TypingIndicator";
 import axios from "axios";
 
 const API_URL = "";   // Use Next.js proxy routes (same-origin)
+// PDF goes directly to Render to bypass Vercel 10s serverless timeout
+const DIRECT_BACKEND = typeof window !== "undefined"
+  ? (process.env.NEXT_PUBLIC_BACKEND_URL || "")
+  : "";
 
 function makeWelcomeMsg(): Message {
   return {
@@ -75,7 +79,7 @@ export default function ChatWindow({ agentName }: { agentName: string }) {
     const form = new FormData();
     form.append("file", file);
     try {
-      const res = await axios.post(`${API_URL}/api/ingest/pdf`, form, { timeout: 60000 });
+      const res = await axios.post(`${DIRECT_BACKEND}/api/ingest/pdf`, form, { timeout: 60000 });
       setPdfStatus(`✅ PDF indexed (${res.data.chunks_created} chunks)`);
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || "Unknown error";
