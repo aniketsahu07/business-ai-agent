@@ -75,13 +75,14 @@ export default function ChatWindow({ agentName }: { agentName: string }) {
     const form = new FormData();
     form.append("file", file);
     try {
-      const res = await axios.post(`${API_URL}/api/ingest/pdf`, form);
+      const res = await axios.post(`${API_URL}/api/ingest/pdf`, form, { timeout: 60000 });
       setPdfStatus(`✅ PDF indexed (${res.data.chunks_created} chunks)`);
-    } catch {
-      setPdfStatus("❌ PDF upload failed.");
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || "Unknown error";
+      setPdfStatus(`❌ Failed: ${msg}`);
     } finally {
       if (fileRef.current) fileRef.current.value = "";
-      setTimeout(() => setPdfStatus(""), 4000);
+      setTimeout(() => setPdfStatus(""), 6000);
     }
   };
 

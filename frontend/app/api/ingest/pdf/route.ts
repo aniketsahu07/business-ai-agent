@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 60; // Allow 60s for PDF processing on Vercel
+
 const BACKEND = process.env.BACKEND_URL || "http://127.0.0.1:8000";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +23,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${BACKEND}/api/ingest/pdf`, {
       method: "POST",
       body: outForm,   // fetch sets Content-Type + boundary automatically
+      signal: AbortSignal.timeout(55000), // 55s timeout
     });
 
     if (!res.ok) {
