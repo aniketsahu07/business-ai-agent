@@ -5,10 +5,11 @@ const BACKEND = process.env.BACKEND_URL || "http://127.0.0.1:8000";
 // Handle pdf, url, text ingest and vectorstore/reset — all proxied to backend
 export async function POST(
   req: NextRequest,
-  { params }: { params: { slug: string[] } }
+  { params }: { params: Promise<{ slug: string[] }> }
 ) {
   try {
-    const path = params.slug.join("/");
+    const { slug } = await params;
+    const path = slug.join("/");
     const searchParams = req.nextUrl.searchParams.toString();
     const backendURL = `${BACKEND}/api/${path}${searchParams ? `?${searchParams}` : ""}`;
 
@@ -37,10 +38,11 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { slug: string[] } }
+  { params }: { params: Promise<{ slug: string[] }> }
 ) {
   try {
-    const path = params.slug.join("/");
+    const { slug } = await params;
+    const path = slug.join("/");
     const res = await fetch(`${BACKEND}/api/${path}`, { method: "DELETE" });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
