@@ -8,14 +8,16 @@ services:
     envVars:
       - key: GROQ_API_KEY
         sync: false          # Set manually in Render dashboard
-      - key: HUGGINGFACE_API_TOKEN
-        sync: false
-      - key: HF_TOKEN
-        sync: false
       - key: LLM_MODEL
         value: llama-3.1-8b-instant
-      - key: NEXT_PUBLIC_BUSINESS_NAME
-        value: FitLife Gym & Wellness Center
-      - key: NEXT_PUBLIC_AGENT_NAME
-        value: Aria
+      - key: HOME
+        value: /tmp
+      - key: XDG_CACHE_HOME
+        value: /tmp/cache
+      - key: CHROMA_CACHE_DIR
+        value: /tmp/chroma_cache
+      - key: TRANSFORMERS_CACHE
+        value: /tmp/hf_cache
+      - key: HF_HOME
+        value: /tmp/hf_home
     healthCheckPath: /

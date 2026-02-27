@@ -1,10 +1,20 @@
 # ============================================================
-#  RAG Engine – Groq (Free) LLM + ChromaDB + HF Embeddings
-#  Groq free tier: https://console.groq.com (no credit card)
+#  RAG Engine – Groq (Free) LLM + ChromaDB + ONNX Embeddings
 # ============================================================
 
 import os
 import asyncio
+
+# Redirect all cache dirs to /tmp (writable on any host incl. Render)
+for _k, _v in [
+    ("HOME",               "/tmp"),
+    ("XDG_CACHE_HOME",     "/tmp/cache"),
+    ("CHROMA_CACHE_DIR",   "/tmp/chroma_cache"),
+    ("HF_HOME",            "/tmp/hf_home"),
+    ("TRANSFORMERS_CACHE", "/tmp/hf_cache"),
+]:
+    os.environ.setdefault(_k, _v)
+
 from dotenv import load_dotenv
 
 from langchain_chroma import Chroma
@@ -22,7 +32,7 @@ load_dotenv()
 # ─── Config ─────────────────────────────────────────────────
 GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
 LLM_MODEL          = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
-CHROMA_PERSIST_DIR = "./data/chroma_db"
+CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "/tmp/chroma_db")
 COLLECTION_NAME    = "business_knowledge"
 HISTORY_WINDOW     = 6
 
