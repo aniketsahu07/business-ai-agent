@@ -1,0 +1,33 @@
+# ============================================================
+#  .gitignore – never commit secrets or generated files
+# ============================================================
+
+# ── Secrets / Environment Variables (NEVER COMMIT) ─────────
+.env
+.env.*
+!.env.example
+!frontend/.env.example
+
+# ── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+*.egg-info/
+
+# ── ChromaDB / Vector Store data ───────────────────────────
+backend/data/chroma_db/
+backend/data/bookings.json
+
+# ── Next.js ────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# ── OS / Editor ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
