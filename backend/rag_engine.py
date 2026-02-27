@@ -8,7 +8,7 @@ import asyncio
 from dotenv import load_dotenv
 
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
@@ -20,7 +20,7 @@ load_dotenv()
 
 # ─── Config ─────────────────────────────────────────────────
 GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
-EMBED_MODEL        = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_MODEL        = "BAAI/bge-small-en-v1.5"
 LLM_MODEL          = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
 CHROMA_PERSIST_DIR = "./data/chroma_db"
 COLLECTION_NAME    = "business_knowledge"
@@ -68,11 +68,9 @@ class RAGEngine:
     def __init__(self):
         print("🔧 Initializing RAG Engine with Groq (Free)...")
 
-        # Local embeddings — no API key, runs on CPU
-        self.embeddings = HuggingFaceEmbeddings(
+        # FastEmbed — ONNX-based, no PyTorch, ~80MB RAM
+        self.embeddings = FastEmbedEmbeddings(
             model_name=EMBED_MODEL,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
         )
 
         # ChromaDB — persistent local vector store
