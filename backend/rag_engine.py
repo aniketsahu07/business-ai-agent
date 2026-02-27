@@ -8,7 +8,8 @@ import asyncio
 from dotenv import load_dotenv
 
 from langchain_chroma import Chroma
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_core.embeddings import Embeddings
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
@@ -20,7 +21,6 @@ load_dotenv()
 
 # ─── Config ─────────────────────────────────────────────────
 GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
-EMBED_MODEL        = "BAAI/bge-small-en-v1.5"
 LLM_MODEL          = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
 CHROMA_PERSIST_DIR = "./data/chroma_db"
 COLLECTION_NAME    = "business_knowledge"
@@ -63,15 +63,26 @@ def format_docs(docs: list) -> str:
     return "\n\n".join(d.page_content for d in docs)
 
 
+# ─── Lightweight Embeddings (ChromaDB ONNX, no PyTorch/Rust) ─
+class _ChromaEmbeddings(Embeddings):
+    """Wraps ChromaDB's built-in all-MiniLM-L6-v2 ONNX model."""
+    def __init__(self):
+        self._ef = DefaultEmbeddingFunction()
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return [list(v) for v in self._ef(texts)]
+
+    def embed_query(self, text: str) -> list[float]:
+        return list(self._ef([text])[0])
+
+
 # ─── RAG Engine ───────────────────────────────────────────────
 class RAGEngine:
     def __init__(self):
         print("🔧 Initializing RAG Engine with Groq (Free)...")
 
-        # FastEmbed — ONNX-based, no PyTorch, ~80MB RAM
-        self.embeddings = FastEmbedEmbeddings(
-            model_name=EMBED_MODEL,
-        )
+        # ChromaDB built-in ONNX embedding — no PyTorch, no Rust, ~80MB RAM
+        self.embeddings = _ChromaEmbeddings()
 
         # ChromaDB — persistent local vector store
         self.vectorstore = Chroma(
