@@ -80,10 +80,11 @@ class _ChromaEmbeddings(Embeddings):
         self._ef = DefaultEmbeddingFunction()
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return [list(v) for v in self._ef(texts)]
+        # Convert np.float32 → plain Python float (ChromaDB strict requirement)
+        return [[float(x) for x in v] for v in self._ef(texts)]
 
     def embed_query(self, text: str) -> list[float]:
-        return list(self._ef([text])[0])
+        return [float(x) for x in self._ef([text])[0]]
 
 
 # ─── RAG Engine ───────────────────────────────────────────────
