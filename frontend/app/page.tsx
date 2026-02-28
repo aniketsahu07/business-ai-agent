@@ -7,7 +7,7 @@ import { Bot, Settings, Lock, Eye, EyeOff, LogOut } from "lucide-react";
 
 const BUSINESS_NAME  = process.env.NEXT_PUBLIC_BUSINESS_NAME  || "Business AI Agent";
 const AGENT_NAME     = process.env.NEXT_PUBLIC_AGENT_NAME     || "Aria";
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin@123";
+const ADMIN_PASSWORD = (process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin@123").trim();
 const SESSION_KEY    = "admin_auth";
 
 export default function Home() {
