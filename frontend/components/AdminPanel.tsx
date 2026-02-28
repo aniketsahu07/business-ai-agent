@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Upload, Link, FileText, Trash2, RefreshCw,
-  CheckCircle, XCircle, Download, RotateCcw
+  CheckCircle, XCircle, Download, RotateCcw, LogOut
 } from "lucide-react";
 import axios from "axios";
 
@@ -11,7 +11,11 @@ const API_URL = "";   // Use Next.js proxy routes (same-origin)
 // PDF goes directly to Render to bypass Vercel 10s serverless timeout
 const DIRECT_BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
-export default function AdminPanel() {
+interface AdminPanelProps {
+  onLogout?: () => void;
+}
+
+export default function AdminPanel({ onLogout }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<"ingest" | "bookings">("ingest");
   const [bookings, setBookings]   = useState<any[]>([]);
   const [loadingBk, setLoadingBk] = useState(false);
@@ -39,7 +43,18 @@ export default function AdminPanel() {
 
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-indigo-100 p-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">⚙️ Admin Panel</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-800">⚙️ Admin Panel</h2>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
+          >
+            <LogOut size={15} />
+            Lock Admin
+          </button>
+        )}
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
