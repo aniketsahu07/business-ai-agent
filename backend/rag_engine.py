@@ -48,6 +48,12 @@ Your goals:
 7. Never make up info not in the context. Say "Please contact our team" if unsure.
 8. Keep answers concise, warm and helpful.
 
+IMPORTANT BOOKING RULE:
+- ONLY add the exact token [TRIGGER_BOOKING] at the very end of your response (on its own line) when the user is EXPLICITLY requesting to book, schedule, or confirm an appointment right now.
+- Do NOT add [TRIGGER_BOOKING] if the user is merely asking about booking, asking what services exist, or asking general questions — even if they mention the word "booking" or "appointment".
+- Example of triggering: "haan book kar do", "yes please schedule", "book karna hai", "mujhe appointment chahiye abhi".
+- Example of NOT triggering: "booking kaise hoti hai?", "do you take appointments?", "what is the process to book?", "booking ke baare mein batao".
+
 Business Context:
 {context}"""),
     MessagesPlaceholder(variable_name="chat_history"),
@@ -156,10 +162,13 @@ class RAGEngine:
         )
         answer = answer.strip()
 
+        # Detect if LLM explicitly decided to open the booking form
+        booking_triggered = "[TRIGGER_BOOKING]" in answer
+        # Strip the marker from the visible answer
+        answer = answer.replace("[TRIGGER_BOOKING]", "").strip()
+
         self._save_exchange(session_id, message, answer)
         sources = list({d.metadata.get("source", "business_data") for d in docs})
-
-        booking_triggered = intent == "booking"
 
         return {
             "answer":            answer,

@@ -123,8 +123,8 @@ export default function ChatWindow({ agentName }: { agentName: string }) {
       };
       setMessages(prev => [...prev, botMsg]);
 
-      // Show booking modal if intent is booking (frontend-side, no backend flag dependency)
-      if (data.booking_triggered || data.intent === "booking") {
+      // Show booking modal only when backend explicitly signals it
+      if (data.booking_triggered) {
         setTimeout(() => setShowBooking(true), 800);
       }
     } catch {
@@ -167,7 +167,7 @@ export default function ChatWindow({ agentName }: { agentName: string }) {
         .then(res => {
           const d = res.data;
           setMessages(prev => [...prev, { id: uuidv4(), role: "assistant", content: d.answer, timestamp: new Date(), sources: d.sources, intent: d.intent }]);
-          if (d.booking_triggered || d.intent === "booking") setTimeout(() => setShowBooking(true), 800);
+          if (d.booking_triggered) setTimeout(() => setShowBooking(true), 800);
         })
         .catch(() => {
           setMessages(prev => [...prev, { id: uuidv4(), role: "assistant", content: "⚠️ Sorry, I'm having trouble connecting right now. Please try again.", timestamp: new Date(), intent: "query" }]);
