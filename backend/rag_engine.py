@@ -48,12 +48,6 @@ Your goals:
 7. Never make up info not in the context. Say "Please contact our team" if unsure.
 8. Keep answers concise, warm and helpful.
 
-IMPORTANT BOOKING RULE:
-- ONLY add the exact token [TRIGGER_BOOKING] at the very end of your response (on its own line) when the user is EXPLICITLY requesting to book, schedule, or confirm an appointment right now.
-- Do NOT add [TRIGGER_BOOKING] if the user is merely asking about booking, asking what services exist, or asking general questions — even if they mention the word "booking" or "appointment".
-- Example of triggering: "haan book kar do", "yes please schedule", "book karna hai", "mujhe appointment chahiye abhi".
-- Example of NOT triggering: "booking kaise hoti hai?", "do you take appointments?", "what is the process to book?", "booking ke baare mein batao".
-
 Business Context:
 {context}"""),
     MessagesPlaceholder(variable_name="chat_history"),
@@ -61,15 +55,53 @@ Business Context:
 ])
 
 # ─── Intent Detection ─────────────────────────────────────────
-BOOKING_KEYWORDS = ["book", "appointment", "schedule", "visit", "consult", "meeting",
-                    "book karna", "appointment chahiye", "milna hai", "book karo"]
 PRICING_KEYWORDS = ["price", "cost", "fee", "charge", "kitna", "rate", "package",
                     "pricing", "plan", "paisa", "rupee", "how much", "fees"]
 
+# Informational question indicators — these mean user is ASKING, not REQUESTING
+_QUESTION_SIGNALS = [
+    # English
+    "how to", "how do", "how can", "how does", "what is", "what are", "what's",
+    "do you", "do i", "can i", "can you", "is there", "are there", "tell me",
+    "explain", "describe", "information", "details", "about", "process",
+    "works", "working",
+    # Hindi
+    "kaise", "kya hai", "kya hota", "kya h", "batao", "bata do", "samjhao",
+    "ke baare", "ke baarein", "kaise hoti", "kaise hota", "kya process",
+    "kya karna", "kya karu",
+]
+
+# Explicit booking ACTION phrases — user wants to book RIGHT NOW
+_BOOKING_ACTIONS = [
+    # English
+    "book now", "book it", "book an appointment", "book a slot", "please book",
+    "i want to book", "i'd like to book", "i would like to book",
+    "schedule an appointment", "fix an appointment", "make an appointment",
+    "set up an appointment",
+    # Hindi
+    "book karna hai", "book kar do", "book karo", "book kar lo",
+    "appointment karo", "appointment kar do", "appointment chahiye",
+    "appointment lena hai", "milna hai", "slot chahiye", "booking karni hai",
+    "booking kar do", "haan book", "ha book", "appointment fix",
+    "schedule kar", "abhi book", "abhi appointment",
+]
+
+def is_booking_action(message: str) -> bool:
+    """Returns True ONLY when user is actively requesting to book (not just asking about it)."""
+    msg = message.lower().strip()
+    # Question mark → informational query, not an action
+    if msg.endswith("?"):
+        return False
+    # If message contains question/informational signals → not a booking action
+    if any(q in msg for q in _QUESTION_SIGNALS):
+        return False
+    # Check for explicit booking action phrases
+    return any(k in msg for k in _BOOKING_ACTIONS)
+
 def detect_intent(message: str) -> str:
     msg = message.lower()
-    if any(k in msg for k in BOOKING_KEYWORDS): return "booking"
-    if any(k in msg for k in PRICING_KEYWORDS):  return "pricing"
+    if is_booking_action(msg): return "booking"
+    if any(k in msg for k in PRICING_KEYWORDS): return "pricing"
     return "query"
 
 def format_docs(docs: list) -> str:
@@ -162,10 +194,8 @@ class RAGEngine:
         )
         answer = answer.strip()
 
-        # Detect if LLM explicitly decided to open the booking form
-        booking_triggered = "[TRIGGER_BOOKING]" in answer
-        # Strip the marker from the visible answer
-        answer = answer.replace("[TRIGGER_BOOKING]", "").strip()
+        # booking_triggered: only when user made an explicit booking request
+        booking_triggered = is_booking_action(message)
 
         self._save_exchange(session_id, message, answer)
         sources = list({d.metadata.get("source", "business_data") for d in docs})
