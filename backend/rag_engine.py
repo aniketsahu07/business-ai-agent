@@ -9,7 +9,6 @@ import asyncio
 for _k, _v in [
     ("HOME",               "/tmp"),
     ("XDG_CACHE_HOME",     "/tmp/cache"),
-    ("CHROMA_CACHE_DIR",   "/tmp/chroma_cache"),
     ("HF_HOME",            "/tmp/hf_home"),
     ("TRANSFORMERS_CACHE", "/tmp/hf_cache"),
 ]:
@@ -34,7 +33,7 @@ GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
 LLM_MODEL          = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "/tmp/chroma_db")
 COLLECTION_NAME    = "business_knowledge"
-HISTORY_WINDOW     = 6
+HISTORY_WINDOW     = 5     # number of past conversation pairs to retain
 
 # ─── Sales System Prompt ─────────────────────────────────────
 SALES_PROMPT = ChatPromptTemplate.from_messages([
@@ -90,12 +89,12 @@ class _ChromaEmbeddings(Embeddings):
 # ─── RAG Engine ───────────────────────────────────────────────
 class RAGEngine:
     def __init__(self):
-        print("🔧 Initializing RAG Engine with Groq (Free)...")
+        print("🔧 Initializing RAG Engine with Groq + ChromaDB...")
 
-        # ChromaDB built-in ONNX embedding — no PyTorch, no Rust, ~80MB RAM
+        # ONNX embeddings — no PyTorch, no Rust
         self.embeddings = _ChromaEmbeddings()
 
-        # ChromaDB — persistent local vector store
+        # ChromaDB — persisted to /tmp on Render
         self.vectorstore = Chroma(
             collection_name=COLLECTION_NAME,
             embedding_function=self.embeddings,
@@ -113,7 +112,7 @@ class RAGEngine:
         # Per-session chat history
         self._histories: dict[str, list] = {}
 
-        print(f"✅ RAG Engine ready. LLM: {LLM_MODEL} via Groq (FREE)")
+        print(f"✅ RAG Engine ready. LLM: {LLM_MODEL} via Groq | VectorDB: ChromaDB")
 
     def _get_history(self, session_id: str) -> list:
         history = self._histories.get(session_id, [])
