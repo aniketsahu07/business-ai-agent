@@ -160,10 +160,7 @@ class RAGEngine:
         self._save_exchange(session_id, message, answer)
         sources = list({d.metadata.get("source", "business_data") for d in docs})
 
-        booking_triggered = intent == "booking" and any(
-            p in answer.lower()
-            for p in ["name", "phone", "number", "naam", "contact", "apna"]
-        )
+        booking_triggered = intent == "booking"
 
         return {
             "answer":            answer,

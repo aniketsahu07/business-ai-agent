@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Send, Mic, MicOff, Paperclip, Trash2 } from "lucide-react";
+import { Send, Mic, MicOff, Paperclip, Trash2, CalendarPlus } from "lucide-react";
 import MessageBubble, { Message } from "./MessageBubble";
 import BookingModal from "./BookingModal";
 import TypingIndicator from "./TypingIndicator";
@@ -192,8 +192,16 @@ export default function ChatWindow({ agentName }: { agentName: string }) {
               </p>
             </div>
           </div>
-          {/* Right: Language Toggle + Clear Chat */}
+          {/* Right: Book Appointment + Language Toggle + Clear Chat */}
           <div className="flex items-center gap-2">
+            {/* Direct Booking Button */}
+            <button
+              onClick={() => setShowBooking(true)}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
+            >
+              <CalendarPlus size={13} />
+              Book
+            </button>
             {/* Language Toggle */}
             <div className="flex gap-1 bg-gray-100 rounded-full p-1">
               {(["auto", "en", "hi"] as const).map(lang => (
